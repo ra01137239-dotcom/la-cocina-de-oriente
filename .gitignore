@@ -1,6 +1,8 @@
 # Variables de entorno
 .env
 .env.local
+.env 2.example
+.env.example
 
 # Logs
 logs
