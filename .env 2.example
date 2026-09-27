@@ -1,0 +1,15 @@
+# Credenciales de Supabase
+
+# SUPABASE_PROJECT_ID="rxuekgyvifpnvemovoho"
+# SUPABASE_PUBLISHABLE_KEY="sb_publishable_JZpWhok2-h_B_ajyFk0ENA_eHwADNt5"
+# SUPABASE_URL="https://rxuekgyvifpnvemovoho.supabase.co"
+# VITE_SUPABASE_PROJECT_ID="rxuekgyvifpnvemovoho"
+# VITE_SUPABASE_PUBLISHABLE_KEY="sb_publishable_JZpWhok2-h_B_ajyFk0ENA_eHwADNt5"
+# VITE_SUPABASE_URL="https://rxuekgyvifpnvemovoho.supabase.co"
+
+SUPABASE_PROJECT_ID="lyjkeazlftgboufzndmg"
+SUPABASE_PUBLISHABLE_KEY="sb_publishable_IG5_bYZaNPmkW7T0-v1X7Q_VO8xRa-z"
+SUPABASE_URL="https://lyjkeazlftgboufzndmg.supabase.co"
+VITE_SUPABASE_PROJECT_ID="lyjkeazlftgboufzndmg"
+VITE_SUPABASE_PUBLISHABLE_KEY="sb_publishable_IG5_bYZaNPmkW7T0-v1X7Q_VO8xRa-z"
+VITE_SUPABASE_URL="https://lyjkeazlftgboufzndmg.supabase.co"
