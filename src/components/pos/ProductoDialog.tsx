@@ -362,7 +362,7 @@ export function ProductoDialog({
             })}
           </div>
 
-          {producto && <BitacoraRegistro entityType="producto" entityId={producto.id} />}
+          {/* {producto && <BitacoraRegistro entityType="producto" entityId={producto.id} />} */}
         </div>
 
         <DialogFooter className="sticky bottom-0 gap-2 border-t bg-card p-4 sm:gap-2">

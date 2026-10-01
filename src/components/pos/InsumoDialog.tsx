@@ -159,7 +159,7 @@ export function InsumoDialog({
           </div>
           {insumo && (
             <div className="sm:col-span-2">
-              <BitacoraRegistro entityType="materia_prima" entityId={insumo.id} />
+              {/* <BitacoraRegistro entityType="materia_prima" entityId={insumo.id} /> */}
             </div>
           )}
         </div>
