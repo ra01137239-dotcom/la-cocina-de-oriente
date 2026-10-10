@@ -4,13 +4,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Check, Pencil, ShieldCheck, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
-
+ 
 import { Button } from "@/components/ui/button";
 import { UsuarioAdminDialog } from "@/components/pos/UsuarioAdminDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useEsAdmin, useSesion, useUsuarios, type UsuarioAdmin } from "@/lib/data";
 import { eliminarUsuario } from "@/lib/usuarios.functions";
-
+ 
 export const Route = createFileRoute("/_authenticated/usuarios")({
   head: () => ({
     meta: [
@@ -29,7 +29,7 @@ export const Route = createFileRoute("/_authenticated/usuarios")({
   }),
   component: Usuarios,
 });
-
+ 
 function Usuarios() {
   const queryClient = useQueryClient();
   const { userId } = useSesion();
@@ -37,11 +37,11 @@ function Usuarios() {
   const { data: usuarios = [], isLoading } = useUsuarios(esAdmin);
   const borrar = useServerFn(eliminarUsuario);
   const [editando, setEditando] = useState<UsuarioAdmin | null>(null);
-
+ 
   if (cargando) {
     return <p className="p-8 text-center text-sm text-muted-foreground">Cargando…</p>;
   }
-
+ 
   if (!esAdmin) {
     return (
       <div className="rounded-xl border border-dashed p-10 text-center">
@@ -50,7 +50,7 @@ function Usuarios() {
       </div>
     );
   }
-
+ 
   async function cambiarAprobacion(u: UsuarioAdmin, aprobado: boolean) {
     const { error } = await supabase.from("usuarios").update({ aprobado }).eq("id", u.id);
     if (error) {
@@ -60,7 +60,7 @@ function Usuarios() {
     toast.success(aprobado ? `${u.nombre} admitido` : `${u.nombre} suspendido`);
     await queryClient.invalidateQueries({ queryKey: ["usuarios"] });
   }
-
+ 
   async function eliminar(u: UsuarioAdmin) {
     if (!window.confirm(`¿Eliminar la cuenta de ${u.nombre}? Esta acción no se puede deshacer.`))
       return;
@@ -72,7 +72,7 @@ function Usuarios() {
       toast.error(error instanceof Error ? error.message : "No se pudo eliminar");
     }
   }
-
+ 
   return (
     <div className="min-w-0 space-y-4">
       <div className="min-w-0">
@@ -81,7 +81,7 @@ function Usuarios() {
           Admite al personal nuevo, edita sus datos o elimina cuentas.
         </p>
       </div>
-
+ 
       <div className="space-y-3">
         {usuarios.map((u) => (
           <article
@@ -100,7 +100,7 @@ function Usuarios() {
                 {(u.nombre || "??").slice(0, 2).toUpperCase()}
               </div>
             )}
-
+ 
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">
                 {u.nombre} {u.id === userId && <span className="text-muted-foreground">(tú)</span>}
@@ -119,7 +119,7 @@ function Usuarios() {
                 </span>
               </div>
             </div>
-
+ 
             <div className="grid grid-cols-3 gap-2 sm:flex sm:shrink-0">
               <Button
                 variant="outline"
@@ -151,7 +151,7 @@ function Usuarios() {
           </p>
         )}
       </div>
-
+ 
       <UsuarioAdminDialog
         usuario={editando}
         open={!!editando}
