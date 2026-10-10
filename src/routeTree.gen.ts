@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedInventarioRouteImport } from './routes/_authenticated/inventario'
+import { Route as AuthenticatedPedidoActivosRouteImport } from './routes/_authenticated/pedido-activos'
 import { Route as AuthenticatedPosRouteImport } from './routes/_authenticated/pos'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 
@@ -35,6 +36,12 @@ const AuthenticatedInventarioRoute = AuthenticatedInventarioRouteImport.update({
   path: '/inventario',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPedidoActivosRoute =
+  AuthenticatedPedidoActivosRouteImport.update({
+    id: '/pedido-activos',
+    path: '/pedido-activos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPosRoute = AuthenticatedPosRouteImport.update({
   id: '/pos',
   path: '/pos',
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/reset-password': typeof ResetPasswordRoute
   '/inventario': typeof AuthenticatedInventarioRoute
+  '/pedido-activos': typeof AuthenticatedPedidoActivosRoute
   '/pos': typeof AuthenticatedPosRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
 }
@@ -57,6 +65,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/reset-password': typeof ResetPasswordRoute
   '/inventario': typeof AuthenticatedInventarioRoute
+  '/pedido-activos': typeof AuthenticatedPedidoActivosRoute
   '/pos': typeof AuthenticatedPosRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
 }
@@ -66,20 +75,34 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/inventario': typeof AuthenticatedInventarioRoute
+  '/_authenticated/pedido-activos': typeof AuthenticatedPedidoActivosRoute
   '/_authenticated/pos': typeof AuthenticatedPosRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/reset-password' | '/inventario' | '/pos' | '/usuarios'
+  fullPaths:
+    | '/'
+    | '/reset-password'
+    | '/inventario'
+    | '/pedido-activos'
+    | '/pos'
+    | '/usuarios'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/reset-password' | '/inventario' | '/pos' | '/usuarios'
+  to:
+    | '/'
+    | '/reset-password'
+    | '/inventario'
+    | '/pedido-activos'
+    | '/pos'
+    | '/usuarios'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/reset-password'
     | '/_authenticated/inventario'
+    | '/_authenticated/pedido-activos'
     | '/_authenticated/pos'
     | '/_authenticated/usuarios'
   fileRoutesById: FileRoutesById
@@ -120,6 +143,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInventarioRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/pedido-activos': {
+      id: '/_authenticated/pedido-activos'
+      path: '/pedido-activos'
+      fullPath: '/pedido-activos'
+      preLoaderRoute: typeof AuthenticatedPedidoActivosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/pos': {
       id: '/_authenticated/pos'
       path: '/pos'
@@ -139,12 +169,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedInventarioRoute: typeof AuthenticatedInventarioRoute
+  AuthenticatedPedidoActivosRoute: typeof AuthenticatedPedidoActivosRoute
   AuthenticatedPosRoute: typeof AuthenticatedPosRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInventarioRoute: AuthenticatedInventarioRoute,
+  AuthenticatedPedidoActivosRoute: AuthenticatedPedidoActivosRoute,
   AuthenticatedPosRoute: AuthenticatedPosRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
 }

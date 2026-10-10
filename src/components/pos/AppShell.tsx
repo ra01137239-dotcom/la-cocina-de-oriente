@@ -34,7 +34,7 @@ const TABS = [
   { to: "/pos", label: "Punto de Venta", corto: "Venta", icon: Store, soloAdmin: false },
   { to: "/inventario", label: "Inventario", corto: "Inventario", icon: Package, soloAdmin: false },
   {
-    to: "/pedidos-activos",
+    to: "/pedido-activos",
     label: "Pedidos Activos",
     corto: "Activos",
     icon: ClipboardList,
