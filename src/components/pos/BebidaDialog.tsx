@@ -412,7 +412,7 @@ export function BebidaDialog({
             </div>
           )}
 
-          {bebida && <BitacoraRegistro entityType="bebida" entityId={bebida.id} />}
+          //{bebida && <BitacoraRegistro entityType="bebida" entityId={bebida.id} />}//
         </div>
 
         <DialogFooter className="sticky bottom-0 gap-2 border-t bg-card p-4 sm:gap-2">

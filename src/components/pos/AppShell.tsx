@@ -1,5 +1,7 @@
-import { Link } from "@tanstack/react-router";
+
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import Notification from "@/components/ui/Notification";
 import {
   ClipboardList,
   Clock,
@@ -12,12 +14,11 @@ import {
   Users,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
 
 import { ImpresoraBluetooth } from "./ImpresoraBluetooth";
 import { Logo } from "./Logo";
 import { PerfilDialog } from "./PerfilDialog";
-import { Button } from "@/components/ui/button";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,13 +27,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import { usePerfil, useEsAdmin } from "@/lib/data";
 import { supabase } from "@/integrations/supabase/client";
 import { NEGOCIO } from "@/lib/pos";
 
 const TABS = [
-  { to: "/pos", label: "Punto de Venta", corto: "Venta", icon: Store, soloAdmin: false },
-  { to: "/inventario", label: "Inventario", corto: "Inventario", icon: Package, soloAdmin: false },
+  {
+    to: "/pos",
+    label: "Punto de Venta",
+    corto: "Venta",
+    icon: Store,
+    soloAdmin: false,
+  },
+  {
+    to: "/inventario",
+    label: "Inventario",
+    corto: "Inventario",
+    icon: Package,
+    soloAdmin: false,
+  },
   {
     to: "/pedido-activos",
     label: "Pedidos Activos",
@@ -40,21 +54,49 @@ const TABS = [
     icon: ClipboardList,
     soloAdmin: false,
   },
-  { to: "/historial", label: "Historial de Pedidos", corto: "Historial", icon: History, soloAdmin: false },
-  { to: "/usuarios", label: "Usuarios", corto: "Usuarios", icon: Users, soloAdmin: true },
-  { to: "/auditoria", label: "Auditoría", corto: "Auditoría", icon: ShieldCheck, soloAdmin: true },
+  {
+    to: "/historial",
+    label: "Historial de Pedidos",
+    corto: "Historial",
+    icon: History,
+    soloAdmin: false,
+  },
+  {
+    to: "/usuarios",
+    label: "Usuarios",
+    corto: "Usuarios",
+    icon: Users,
+    soloAdmin: true,
+  },
+  {
+    to: "/auditoria",
+    label: "Auditoría",
+    corto: "Auditoría",
+    icon: ShieldCheck,
+    soloAdmin: true,
+  },
 ] as const;
 
-
 function Reloj() {
-  const [hora, setHora] = useState<string>("");
+  const [hora, setHora] = useState("");
+
   useEffect(() => {
-    const tick = () =>
-      setHora(new Date().toLocaleTimeString("es-SV", { hour: "2-digit", minute: "2-digit" }));
-    tick();
-    const id = window.setInterval(tick, 15000);
+    const actualizarHora = () => {
+      setHora(
+        new Date().toLocaleTimeString("es-SV", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      );
+    };
+
+    actualizarHora();
+
+    const id = window.setInterval(actualizarHora, 15000);
+
     return () => window.clearInterval(id);
   }, []);
+
   return (
     <span className="inline-flex items-center gap-1.5 text-sm font-medium tabular-nums text-brand-foreground/85">
       <Clock className="h-4 w-4" />
@@ -63,22 +105,36 @@ function Reloj() {
   );
 }
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { data: perfil } = usePerfil();
   const { esAdmin } = useEsAdmin();
+
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
   const [editarPerfil, setEditarPerfil] = useState(false);
 
-  const tabs = TABS.filter((tab) => !tab.soloAdmin || esAdmin);
-  const pendiente = !!perfil && !perfil.aprobado && !esAdmin;
+  const tabs = TABS.filter(
+    (tab) => !tab.soloAdmin || esAdmin
+  );
 
-  const iniciales = (perfil?.nombre ?? "??").slice(0, 2).toUpperCase();
+  const pendiente =
+    !!perfil && !perfil.aprobado && !esAdmin;
+
+  const iniciales = (perfil?.nombre ?? "??")
+    .slice(0, 2)
+    .toUpperCase();
 
   async function salir() {
     await queryClient.cancelQueries();
     queryClient.clear();
+
     await supabase.auth.signOut();
+
     navigate({ to: "/", replace: true });
   }
 
@@ -98,57 +154,89 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 bg-brand text-brand-foreground shadow-lifted">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-3 px-3 py-3 sm:px-5">
+          {/* Barra superior */}
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+            {/* Logo y nombre del negocio */}
             <div className="flex min-w-0 items-center gap-3">
               <Logo size="sm" />
+
               <div className="min-w-0">
                 <p className="truncate text-sm font-extrabold tracking-tight sm:text-base">
                   {NEGOCIO.nombre}
                 </p>
-                <p className="truncate text-[11px] text-brand-foreground/70">POS · Pupusería</p>
+
+                <p className="truncate text-[11px] text-brand-foreground/70">
+                  POS · Pupusería
+                </p>
               </div>
             </div>
 
+            {/* Notificaciones, impresora, reloj y perfil */}
             <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+              <Notification />
+
               <ImpresoraBluetooth />
+
               <Reloj />
+
               <DropdownMenu>
                 <DropdownMenuTrigger
                   aria-label="Menú de usuario"
                   className="flex min-w-0 items-center gap-2 rounded-full border-l border-brand-foreground/15 pl-2 outline-none sm:pl-4"
                 >
                   {avatar}
+
                   <div className="hidden min-w-0 text-left leading-tight md:block">
-                    <p className="truncate text-xs font-semibold">{perfil?.nombre ?? "Cargando…"}</p>
+                    <p className="truncate text-xs font-semibold">
+                      {perfil?.nombre ?? "Cargando…"}
+                    </p>
+
                     <p className="truncate text-[11px] text-brand-foreground/65">
-                      {perfil?.rol === "admin" ? "Administrador" : "Cajera"}
+                      {perfil?.rol === "admin"
+                        ? "Administrador"
+                        : "Cajera"}
                     </p>
                   </div>
                 </DropdownMenuTrigger>
+
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel className="truncate">
                     {perfil?.nombre ?? "Usuaria"}
                   </DropdownMenuLabel>
+
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="py-2.5" onSelect={() => setEditarPerfil(true)}>
-                    <UserCog className="mr-2 h-4 w-4" /> Editar Perfil
+
+                  <DropdownMenuItem
+                    className="py-2.5"
+                    onSelect={() => setEditarPerfil(true)}
+                  >
+                    <UserCog className="mr-2 h-4 w-4" />
+                    Editar Perfil
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="py-2.5 text-destructive" onSelect={() => void salir()}>
-                    <LogOut className="mr-2 h-4 w-4" /> Cerrar Sesión
+
+                  <DropdownMenuItem
+                    className="py-2.5 text-destructive"
+                    onSelect={() => void salir()}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Cerrar Sesión
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </div>
 
-          {/* Navegación en tablet y desktop */}
+          {/* Navegación en tablet y escritorio */}
           <nav className="-mx-1 hidden items-stretch gap-1 overflow-x-auto pb-0.5 sm:flex">
             {tabs.map((tab) => (
               <Link
                 key={tab.to}
                 to={tab.to}
                 className="shrink-0 rounded-lg px-3 py-2.5 text-sm font-semibold text-brand-foreground/70 transition-colors hover:bg-brand-deep hover:text-brand-foreground"
-                activeProps={{ className: "bg-flame text-flame-foreground hover:bg-flame" }}
+                activeProps={{
+                  className:
+                    "bg-flame text-flame-foreground hover:bg-flame",
+                }}
               >
                 {tab.label}
               </Link>
@@ -157,13 +245,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
+      {/* Contenido de las páginas */}
       <main className="mx-auto min-w-0 max-w-[1600px] overflow-x-clip px-3 pb-24 pt-4 sm:px-5 sm:py-6 sm:pb-6">
         {pendiente ? (
           <div className="mx-auto max-w-md rounded-xl border border-dashed p-10 text-center">
-            <p className="text-base font-semibold">Tu cuenta está pendiente de admisión</p>
+            <p className="text-base font-semibold">
+              Tu cuenta está pendiente de admisión
+            </p>
+
             <p className="mt-2 text-sm text-muted-foreground">
-              Pídele al administrador del negocio que apruebe tu acceso para empezar a usar el
-              punto de venta.
+              Pídele al administrador del negocio que apruebe tu
+              acceso para empezar a usar el punto de venta.
             </p>
           </div>
         ) : (
@@ -171,9 +263,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
       </main>
 
-      {/* Navegación inferior en mobile */}
+      {/* Navegación inferior en móviles */}
       <nav
-        style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+        style={{
+          gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))`,
+        }}
         className="fixed inset-x-0 bottom-0 z-40 grid border-t bg-card pb-[env(safe-area-inset-bottom)] shadow-lifted sm:hidden"
       >
         {tabs.map((tab) => (
@@ -189,7 +283,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         ))}
       </nav>
 
-      <PerfilDialog perfil={perfil} open={editarPerfil} onOpenChange={setEditarPerfil} />
+      {/* Diálogo de edición de perfil */}
+      <PerfilDialog
+        perfil={perfil}
+        open={editarPerfil}
+        onOpenChange={setEditarPerfil}
+      />
     </div>
   );
 }
