@@ -124,7 +124,7 @@ function LoginPage() {
             {(
               [
                 ["cajera", "Correo Electrónico"],
-                ["admin", "Administrador"],
+                //["admin", "Administrador"],
               ] as const
             ).map(([value, label]) => (
               <button
