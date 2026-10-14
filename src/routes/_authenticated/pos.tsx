@@ -430,7 +430,7 @@ function PuntoDeVenta() {
                       p.disponible ? "" : "opacity-40 blur-[2px] grayscale"
                     }`}
                   >
-                    🫓
+                    🫓 Picture
                   </div>
                 )}
                 {!p.disponible && (
