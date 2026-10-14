@@ -92,7 +92,7 @@ function Inventario() {
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:justify-between">
         <div className="min-w-0">
           <h1 className="truncate text-xl font-extrabold tracking-tight sm:text-2xl">Inventario</h1>
-          <p className="text-xs text-muted-foreground">Materia prima de la cocina</p>
+          <p className="text-xs text-muted-foreground">Materia prima</p>
         </div>
         <Button
           variant="flame"
