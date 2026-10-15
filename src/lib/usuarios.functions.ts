@@ -43,6 +43,8 @@ export const eliminarUsuario = createServerFn({ method: "POST" })
     // 1. Validar que exista el usuario que se quiere eliminar
     // =====================================================
 
+    
+
     const {
       data: usuario,
       error: usuarioError,
