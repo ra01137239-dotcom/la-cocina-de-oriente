@@ -190,6 +190,28 @@ function LoginPage() {
 
         {/* Formulario de acceso */}
         <section className="rounded-2xl bg-card p-5 text-card-foreground shadow-lifted sm:p-7">
+          <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
+            {(
+              [
+                ["cajera", "Correo Electrónico"],
+                //["admin", "Administrador"],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setTab(value)}
+                className={`rounded-lg px-3 py-2 text-xs font-semibold transition-colors sm:text-sm ${
+                  tab === value
+                    ? "bg-card text-brand shadow-soft"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
           <h2 className="text-lg font-bold tracking-tight">
             {modo === "entrar" ? "Iniciar sesión" : "Crear cuenta"}
           </h2>
