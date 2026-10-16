@@ -97,6 +97,23 @@ export function ProductoDialog({
     }
   }, [open, producto]);
 
+
+    async function eliminar() {
+    if (!producto) return;
+    if (!window.confirm(`¿Eliminar "${producto.nombre}"? Los tickets anteriores conservarán su nombre y precio.`)) return;
+    setGuardando(true);
+    await supabase.from("producto_insumos").delete().eq("producto_id", producto.id);
+    const { error } = await supabase.from("productos").delete().eq("id", producto.id);
+    setGuardando(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Producto eliminado");
+    await queryClient.invalidateQueries({ queryKey: ["productos"] });
+    onOpenChange(false);
+  }
+
   async function guardar() {
     setGuardando(true);
     const payload = {
@@ -366,6 +383,16 @@ export function ProductoDialog({
         </div>
 
         <DialogFooter className="sticky bottom-0 gap-2 border-t bg-card p-4 sm:gap-2">
+           {producto && (
+            <Button
+              variant="outline"
+              className="h-11 text-destructive sm:mr-auto"
+              onClick={eliminar}
+              disabled={guardando}
+            >
+              <Trash2 /> Eliminar producto
+            </Button>
+          )}
           <Button variant="outline" className="h-11" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
