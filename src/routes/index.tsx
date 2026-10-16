@@ -190,7 +190,7 @@ function LoginPage() {
 
         {/* Formulario de acceso */}
         <section className="rounded-2xl bg-card p-5 text-card-foreground shadow-lifted sm:p-7">
-          <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
+          {/* <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
             {(
               [
                 ["cajera", "Correo Electrónico"],
@@ -210,7 +210,7 @@ function LoginPage() {
                 {label}
               </button>
             ))}
-          </div>
+          </div> */}
 
           <h2 className="text-lg font-bold tracking-tight">
             {modo === "entrar" ? "Iniciar sesión" : "Crear cuenta"}
