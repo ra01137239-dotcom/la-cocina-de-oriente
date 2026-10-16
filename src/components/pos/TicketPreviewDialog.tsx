@@ -1,4 +1,5 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 
 type Props = {
@@ -10,6 +11,7 @@ type Props = {
   confirmLabel: string;
   onConfirm: () => void;
   procesando?: boolean;
+  extra?: ReactNode;
 };
 
 export function TicketPreviewDialog({
@@ -21,6 +23,7 @@ export function TicketPreviewDialog({
   confirmLabel,
   onConfirm,
   procesando,
+  extra,
 }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -29,6 +32,7 @@ export function TicketPreviewDialog({
           <DialogTitle>{titulo}</DialogTitle>
           <DialogDescription>{descripcion}</DialogDescription>
         </DialogHeader>
+        {extra && <div className="border-b p-4">{extra}</div>}
         <div className="mx-4 my-4 w-auto flex-1 overflow-y-auto rounded-lg border border-dashed bg-card p-4 shadow-soft">
           <pre className="ticket-paper text-foreground">{texto}</pre>
         </div>

@@ -24,6 +24,7 @@ import {
   nuevoNumeroTicket,
   renderTicket,
   type Bebida,
+  type MetodoPago,
   type PedidoItem,
   type Producto,
 } from "@/lib/pos";
@@ -73,6 +74,7 @@ function PuntoDeVenta() {
   const [accion, setAccion] = useState<Accion>(null);
   const [procesando, setProcesando] = useState(false);
   const [panelMovil, setPanelMovil] = useState(false);
+  const [metodoPago, setMetodoPago] = useState<MetodoPago>("efectivo");
 
   // Carga un pedido existente para seguir editándolo (desde Pedidos Activos)
   const { pedido: pedidoParam } = Route.useSearch();
@@ -173,6 +175,7 @@ function PuntoDeVenta() {
     total: totales.total,
     fecha: new Date(),
     cajera: perfil?.nombre ?? "—",
+    metodoPago,
   };
 
   const textoCocina = renderTicket(baseTicket, "cocina");
@@ -188,6 +191,7 @@ function PuntoDeVenta() {
       total: totales.total,
       items: items as unknown as never,
       fecha_pago: estado === "pagado" ? new Date().toISOString() : null,
+      metodo_pago: estado === "pagado" ? metodoPago : null,
     };
 
     if (pedidoId) {
@@ -200,6 +204,7 @@ function PuntoDeVenta() {
           total: payload.total,
           items: payload.items,
           fecha_pago: payload.fecha_pago,
+          metodo_pago: payload.metodo_pago,
         })
         .eq("id", pedidoId);
       if (error) throw error;
@@ -217,6 +222,7 @@ function PuntoDeVenta() {
     setNumeroTicket(nuevoNumeroTicket());
     setMesa("1");
     setTipo("comedor");
+    setMetodoPago("efectivo");
     setPanelMovil(false);
     cargado.current = null;
     if (pedidoParam) void navigate({ to: "/pos", search: {} as never, replace: true });
@@ -317,23 +323,25 @@ function PuntoDeVenta() {
   );
 
   const acciones = (
-    <div className="space-y-2">
-      <Button
-        variant="outline"
-        className="h-11 w-full"
-        disabled={!items.length || procesando}
-        onClick={guardarPendiente}
-      >
-        <Save /> Guardar Pedido / Pendiente
-      </Button>
-      <Button
-        variant="brand"
-        className="h-11 w-full"
-        disabled={!items.length || procesando}
-        onClick={() => setAccion("cocina")}
-      >
-        <Printer /> Imprimir Ticket de Cocina
-      </Button>
+ <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-2">
+        <Button
+          variant="outline"
+          className="h-11 w-full px-2 text-xs leading-tight whitespace-normal"
+          disabled={!items.length || procesando}
+          onClick={guardarPendiente}
+        >
+          <Save /> Guardar Pedido
+        </Button>
+        <Button
+          variant="brand"
+          className="h-11 w-full px-2 text-xs leading-tight whitespace-normal"
+          disabled={!items.length || procesando}
+          onClick={() => setAccion("cocina")}
+        >
+          <Printer /> Ticket de Cocina
+        </Button>
+      </div>
       <Button
         variant="flame"
         className="h-12 w-full"
@@ -631,7 +639,35 @@ function PuntoDeVenta() {
         descripcion={
           accion === "cocina"
             ? "Revisa la comanda antes de enviarla a la cocina."
-            : "Revisa el ticket antes de confirmar el pago en efectivo."
+            : "Selecciona la forma de pago y revisa el ticket antes de confirmar."
+        }
+        extra={
+          accion === "pago" ? (
+            <div className="space-y-1.5">
+              <p className="text-xs font-semibold text-muted-foreground">Forma de pago</p>
+              <div className="grid grid-cols-2 gap-1 rounded-xl bg-secondary p-1" role="radiogroup" aria-label="Forma de pago">
+                {(
+                  [
+                    ["efectivo", "Efectivo"],
+                    ["transferencia", "Transferencia"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    role="radio"
+                    aria-checked={metodoPago === value}
+                    onClick={() => setMetodoPago(value)}
+                    className={`h-11 rounded-lg text-sm font-semibold transition ${
+                      metodoPago === value ? "bg-card text-brand shadow-soft" : "text-muted-foreground"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : undefined
         }
         texto={accion === "cocina" ? textoCocina : textoCliente}
         confirmLabel={accion === "cocina" ? "Imprimir en Cocina" : "Confirmar Pago"}

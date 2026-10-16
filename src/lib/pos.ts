@@ -66,8 +66,26 @@ export type Pedido = {
   total: number;
   fecha_creacion: string;
   fecha_pago: string | null;
+  metodo_pago?: MetodoPago | null;
   items: PedidoItem[];
 };
+
+export type MetodoPago = "efectivo" | "transferencia";
+
+export const etiquetaMetodoPago = (m?: string | null) =>
+  m === "transferencia" ? "Transferencia" : m === "efectivo" ? "Efectivo" : "—";
+
+/** Suma lo cobrado por forma de pago (solo pedidos pagados; sin método = efectivo). */
+export function totalesPorMetodo(pedidos: { estado: string; total: number; metodo_pago?: string | null }[]) {
+  let efectivo = 0;
+  let transferencia = 0;
+  for (const p of pedidos) {
+    if (p.estado !== "pagado") continue;
+    if (p.metodo_pago === "transferencia") transferencia += Number(p.total);
+    else efectivo += Number(p.total);
+  }
+  return { efectivo, transferencia };
+}
 
 export type PerfilUsuario = {
   id: string;
@@ -124,6 +142,7 @@ export function renderTicket(
     total: number;
     fecha: Date;
     cajera: string;
+    metodoPago?: MetodoPago;
   },
   variante: "cocina" | "cliente",
 ) {
