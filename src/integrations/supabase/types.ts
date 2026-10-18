@@ -5,12 +5,12 @@ export type Json =
   | null
   | { [key: string]: Json | undefined }
   | Json[]
-
+ 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -116,6 +116,7 @@ export type Database = {
           created_at: string
           disponible: boolean
           id: string
+          imagen_url: string | null
           nombre: string
           precio: number
           tamano: string
@@ -126,6 +127,7 @@ export type Database = {
           created_at?: string
           disponible?: boolean
           id?: string
+          imagen_url?: string | null
           nombre: string
           precio?: number
           tamano?: string
@@ -136,6 +138,7 @@ export type Database = {
           created_at?: string
           disponible?: boolean
           id?: string
+          imagen_url?: string | null
           nombre?: string
           precio?: number
           tamano?: string
@@ -299,6 +302,7 @@ export type Database = {
           items: Json
           iva: number
           mesa: string | null
+          metodo_pago: string | null
           numero_ticket: string
           subtotal: number
           tipo: string
@@ -313,6 +317,7 @@ export type Database = {
           items?: Json
           iva?: number
           mesa?: string | null
+          metodo_pago?: string | null
           numero_ticket: string
           subtotal?: number
           tipo?: string
@@ -327,6 +332,7 @@ export type Database = {
           items?: Json
           iva?: number
           mesa?: string | null
+          metodo_pago?: string | null
           numero_ticket?: string
           subtotal?: number
           tipo?: string
@@ -508,6 +514,10 @@ export type Database = {
         }
         Returns: string
       }
+      registrar_resumen_diario: {
+        Args: { _clave: string; _delta: number }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "cajera"
@@ -517,11 +527,11 @@ export type Database = {
     }
   }
 }
-
+ 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
-
+ 
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
-
+ 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
@@ -550,7 +560,7 @@ export type Tables<
       ? R
       : never
     : never
-
+ 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
@@ -575,7 +585,7 @@ export type TablesInsert<
       ? I
       : never
     : never
-
+ 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
@@ -600,7 +610,7 @@ export type TablesUpdate<
       ? U
       : never
     : never
-
+ 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
@@ -617,7 +627,7 @@ export type Enums<
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
-
+ 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
@@ -634,7 +644,7 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
-
+ 
 export const Constants = {
   public: {
     Enums: {

@@ -117,7 +117,7 @@ function PuntoDeVenta() {
       descripcion: "Bebida fría o caliente del día",
       precio: Number(b.precio),
       categoria: "Bebidas",
-      imagen_url: null,
+      imagen_url: b.imagen_url ?? null,
       disponible: b.disponible,
     }));
     return [...productos.map((p) => ({ ...p, precio: Number(p.precio) })), ...bebidasComoProducto];

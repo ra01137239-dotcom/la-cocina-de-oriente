@@ -18,6 +18,8 @@ export type Bebida = {
   disponible: boolean;
   tipo?: string;
   categoria_id?: string | null;
+  imagen_url?: string | null;
+ 
 };
 
 export type Insumo = {
