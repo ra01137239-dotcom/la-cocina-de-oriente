@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { BitacoraRegistro } from "@/components/pos/BitacoraRegistro";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -412,7 +413,7 @@ export function BebidaDialog({
             </div>
           )}
 
-          //{bebida && <BitacoraRegistro entityType="bebida" entityId={bebida.id} />}//
+          {bebida && <BitacoraRegistro entityType="bebida" entityId={bebida.id} />}
         </div>
 
         <DialogFooter className="sticky bottom-0 gap-2 border-t bg-card p-4 sm:gap-2">
