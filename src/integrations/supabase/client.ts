@@ -38,7 +38,7 @@ function createSupabaseClient() {
       ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
       ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
     ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase.`;
+    const message = `Faltan variables de entorno de Supabase: ${missing.join(', ')}. Connect Supabase.`;
     console.error(`[Supabase] ${message}`);
     throw new Error(message);
   }

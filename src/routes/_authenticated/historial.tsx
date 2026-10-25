@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { BarChart3, Search, X } from "lucide-react";
-
+import { BitacoraRegistro } from "@/components/pos/BitacoraRegistro";
 import { Paginacion } from "@/components/pos/Paginacion";
-
+import { ResumenVentasDialog } from "@/components/pos/ResumenVentasDialog";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -312,11 +312,17 @@ function Historial() {
           <div className="mt-3 rounded-lg border border-dashed p-3">
             <pre className="ticket-paper">{textoTicket}</pre>
           </div>
-          
-                  </aside>
+          <div className="mt-4">
+            <BitacoraRegistro entityType="pedido" entityId={detalle.id} titulo="Bitácora del pedido" />
+          </div>
+         </aside>
       )}
 
-      
+      <ResumenVentasDialog
+        abierto={resumenAbierto}
+        onOpenChange={setResumenAbierto}
+        pedidos={pedidos}
+      />
     </div>
   );
 }
