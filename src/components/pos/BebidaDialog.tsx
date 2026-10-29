@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-
+ 
 import { BitacoraRegistro } from "@/components/pos/BitacoraRegistro";
 import { Button } from "@/components/ui/button";
 import {
@@ -442,16 +442,10 @@ export function BebidaDialog({
               })}
 </div>
           )}
-<<<<<<<<< Temporary merge branch 1
  
-</div>
- 
-=========
-
           {bebida && <BitacoraRegistro entityType="bebida" entityId={bebida.id} />}
         </div>
-
->>>>>>>>> Temporary merge branch 2
+ 
         <DialogFooter className="sticky bottom-0 gap-2 border-t bg-card p-4 sm:gap-2">
           {bebida && (
 <Button
