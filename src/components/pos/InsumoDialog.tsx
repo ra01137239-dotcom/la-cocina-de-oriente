@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-//import { BitacoraRegistro } from "@/components/pos/BitacoraRegistro";
+import { BitacoraRegistro } from "@/components/pos/BitacoraRegistro";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -159,7 +159,7 @@ export function InsumoDialog({
           </div>
           {insumo && (
             <div className="sm:col-span-2">
-              {/* <BitacoraRegistro entityType="materia_prima" entityId={insumo.id} /> */}
+              <BitacoraRegistro entityType="materia_prima" entityId={insumo.id} />
             </div>
           )}
         </div>

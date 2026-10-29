@@ -4,6 +4,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
  
 
+import { BitacoraRegistro } from "@/components/pos/BitacoraRegistro";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -442,9 +443,16 @@ export function BebidaDialog({
               })}
 </div>
           )}
+{/* <<<<<<< HEAD
  
 </div>
  
+=======
+
+          {bebida && <BitacoraRegistro entityType="bebida" entityId={bebida.id} />}
+        </div>
+
+>>>>>>> origin/main */}
         <DialogFooter className="sticky bottom-0 gap-2 border-t bg-card p-4 sm:gap-2">
           {bebida && (
 <Button
