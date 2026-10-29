@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { money, type Pedido } from "@/lib/pos";
+import { coincidePeriodo, etiquetaSemana, fechaVenta, semanaVenta } from "@/lib/venta-sem";
 
 type Props = {
   abierto: boolean;
@@ -30,6 +31,8 @@ type Fila = {
   cancelados: number;
   items: number;
   total: number;
+  efectivo: number;
+  transferencia: number;
 };
 
 const MESES = [
@@ -52,14 +55,13 @@ const POR_PAGINA = 10;
 function resumir(pedidos: Pedido[]): Fila[] {
   const mapa = new Map<string, Fila>();
   for (const p of pedidos) {
-    const d = new Date(p.fecha_creacion);
-    const fecha = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-      d.getDate(),
-    ).padStart(2, "0")}`;
-    const fila = mapa.get(fecha) ?? { fecha, pagados: 0, cancelados: 0, items: 0, total: 0 };
+    const fecha = fechaVenta(p.fecha_creacion);
+    const fila = mapa.get(fecha) ?? { fecha, pagados: 0, cancelados: 0, items: 0, total: 0, efectivo: 0, transferencia: 0 };
     if (p.estado === "pagado") {
       fila.pagados += 1;
       fila.total += Number(p.total);
+      if (p.metodo_pago === "transferencia") fila.transferencia += Number(p.total);
+      else fila.efectivo += Number(p.total);
       fila.items += (p.items ?? []).reduce((s, i) => s + i.cantidad, 0);
     } else if (p.estado === "cancelado") {
       fila.cancelados += 1;
@@ -72,6 +74,7 @@ function resumir(pedidos: Pedido[]): Fila[] {
 export function ResumenVentasDialog({ abierto, onOpenChange, pedidos }: Props) {
   const [anio, setAnio] = useState("todos");
   const [mes, setMes] = useState("todos");
+  const [semana, setSemana] = useState("todos");
   const [pagina, setPagina] = useState(1);
 
   const anios = useMemo(() => {
@@ -80,24 +83,25 @@ export function ResumenVentasDialog({ abierto, onOpenChange, pedidos }: Props) {
     return [...set].sort((a, b) => b - a);
   }, [pedidos]);
 
+  const semanas = useMemo(() => [...new Set(pedidos
+    .filter((p) => coincidePeriodo(p.fecha_creacion, anio, mes))
+    .map((p) => semanaVenta(p.fecha_creacion)))].sort().reverse(), [pedidos, anio, mes]);
+
   const filas = useMemo(() => {
-    const filtrados = pedidos.filter((p) => {
-      const d = new Date(p.fecha_creacion);
-      const okAnio = anio === "todos" || d.getFullYear() === Number(anio);
-      const okMes = mes === "todos" || d.getMonth() + 1 === Number(mes);
-      return okAnio && okMes;
-    });
+    const filtrados = pedidos.filter((p) => coincidePeriodo(p.fecha_creacion, anio, mes, semana));  
     return resumir(filtrados);
-  }, [pedidos, anio, mes]);
+  }, [pedidos, anio, mes, semana]);
 
   const totalGeneral = filas.reduce((s, f) => s + f.total, 0);
   const ticketsGeneral = filas.reduce((s, f) => s + f.pagados, 0);
+  const efectivoGeneral = filas.reduce((s, f) => s + f.efectivo, 0);
+  const transferenciaGeneral = filas.reduce((s, f) => s + f.transferencia, 0);
 
   const totalPaginas = Math.max(1, Math.ceil(filas.length / POR_PAGINA));
 
   useEffect(() => {
     setPagina(1);
-  }, [anio, mes, abierto]);
+  }, [anio, mes, semana, abierto]);
 
   const paginaActual = Math.min(pagina, totalPaginas);
   const visibles = filas.slice((paginaActual - 1) * POR_PAGINA, paginaActual * POR_PAGINA);
@@ -140,6 +144,15 @@ export function ResumenVentasDialog({ abierto, onOpenChange, pedidos }: Props) {
                 ))}
               </SelectContent>
             </Select>
+            <Select value={semana} onValueChange={setSemana}>
+              <SelectTrigger className="h-11 sm:col-span-2" aria-label="Filtrar por semana">
+                <SelectValue placeholder="Semana" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todas las semanas</SelectItem>
+                {semanas.map((s) => <SelectItem key={s} value={s}>{etiquetaSemana(s)}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-3">
@@ -152,6 +165,14 @@ export function ResumenVentasDialog({ abierto, onOpenChange, pedidos }: Props) {
               <p className="text-xl font-extrabold tabular-nums text-brand">
                 {money(totalGeneral)}
               </p>
+            </div>
+             <div className="rounded-xl border bg-secondary/50 p-3">
+              <p className="text-xs text-muted-foreground">Efectivo</p>
+              <p className="text-lg font-extrabold tabular-nums">{money(efectivoGeneral)}</p>
+            </div>
+            <div className="rounded-xl border bg-secondary/50 p-3">
+              <p className="text-xs text-muted-foreground">Transferencia</p>
+              <p className="text-lg font-extrabold tabular-nums">{money(transferenciaGeneral)}</p>
             </div>
           </div>
 
@@ -173,6 +194,14 @@ export function ResumenVentasDialog({ abierto, onOpenChange, pedidos }: Props) {
                     <dd className="font-medium tabular-nums">{f.items}</dd>
                   </div>
                   <div>
+                    <dt className="text-muted-foreground">Efectivo</dt>
+                    <dd className="font-medium tabular-nums">{money(f.efectivo)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Transferencia</dt>
+                    <dd className="font-medium tabular-nums">{money(f.transferencia)}</dd>
+                  </div>
+                  <div>
                     <dt className="text-muted-foreground">Total</dt>
                     <dd className="font-bold tabular-nums text-brand">{money(f.total)}</dd>
                   </div>
@@ -189,6 +218,8 @@ export function ResumenVentasDialog({ abierto, onOpenChange, pedidos }: Props) {
                   <th className="px-3 py-2 text-right">Pagados</th>
                   <th className="px-3 py-2 text-right">Cancelados</th>
                   <th className="px-3 py-2 text-right">Ítems</th>
+                  <th className="px-3 py-2 text-right">Efectivo</th>
+                  <th className="px-3 py-2 text-right">Transf.</th>
                   <th className="px-3 py-2 text-right">Total</th>
                 </tr>
               </thead>
@@ -199,6 +230,8 @@ export function ResumenVentasDialog({ abierto, onOpenChange, pedidos }: Props) {
                     <td className="px-3 py-2 text-right tabular-nums">{f.pagados}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{f.cancelados}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{f.items}</td>
+                    <td className="px-3 py-2 text-right tabular-nums">{money(f.efectivo)}</td>
+                    <td className="px-3 py-2 text-right tabular-nums">{money(f.transferencia)}</td>
                     <td className="px-3 py-2 text-right font-semibold tabular-nums text-brand">
                       {money(f.total)}
                     </td>
