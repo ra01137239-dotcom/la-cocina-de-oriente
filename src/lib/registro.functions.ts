@@ -5,7 +5,7 @@ import { registroSchema } from "./registro-schema";
 
 /** Public signup: declaration is validated before contacting the auth provider. */
 export const crearCuenta = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => registroSchema.parse(input))
+  .validator((input: unknown) => registroSchema.parse(input))
   .handler(async ({ data }) => {
     const url = process.env["SUPABASE_URL"];
     const key = process.env["SUPABASE_PUBLISHABLE_KEY"];

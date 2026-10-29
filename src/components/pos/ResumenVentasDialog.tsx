@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { FileDown, FileSpreadsheet, LoaderCircle } from "lucide-react";
 
 import { Paginacion } from "@/components/pos/Paginacion";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,8 @@ import {
 } from "@/components/ui/select";
 import { money, type Pedido } from "@/lib/pos";
 import { coincidePeriodo, etiquetaSemana, fechaVenta, semanaVenta } from "@/lib/venta-sem";
+import { entregarArchivo } from "@/lib/descargas";
+import { type FilaVentas } from "@/lib/ventas-export";
 
 type Props = {
   abierto: boolean;
@@ -25,15 +28,7 @@ type Props = {
   pedidos: Pedido[];
 };
 
-type Fila = {
-  fecha: string;
-  pagados: number;
-  cancelados: number;
-  items: number;
-  total: number;
-  efectivo: number;
-  transferencia: number;
-};
+type Fila = FilaVentas;
 
 const MESES = [
   "Enero",
@@ -76,6 +71,9 @@ export function ResumenVentasDialog({ abierto, onOpenChange, pedidos }: Props) {
   const [mes, setMes] = useState("todos");
   const [semana, setSemana] = useState("todos");
   const [pagina, setPagina] = useState(1);
+  const [archivos, setArchivos] = useState<{ filas: Fila[]; periodo: string; pdf: Blob; excel: Blob } | null>(null);
+  const [errorExportacion, setErrorExportacion] = useState("");
+  const [reintento, setReintento] = useState(0);
 
   const anios = useMemo(() => {
     const set = new Set<number>();
@@ -91,6 +89,35 @@ export function ResumenVentasDialog({ abierto, onOpenChange, pedidos }: Props) {
     const filtrados = pedidos.filter((p) => coincidePeriodo(p.fecha_creacion, anio, mes, semana));  
     return resumir(filtrados);
   }, [pedidos, anio, mes, semana]);
+
+  const periodo = `${anio}_${mes}_${semana}`;
+  const listo = abierto && archivos?.filas === filas && archivos.periodo === periodo;
+
+    useEffect(() => {
+    let cancelado = false;
+    setArchivos(null);
+    setErrorExportacion("");
+    if (!abierto || !filas.length) return;
+    async function preparar() {
+      try {
+        const { generarPdfVentas, generarExcelVentas } = await import("@/lib/ventas-export");
+        const filtros = { anio, mes, semana };
+        const [pdf, excel] = await Promise.all([generarPdfVentas(filas, filtros), generarExcelVentas(filas, filtros)]);
+        if (!cancelado) setArchivos({ filas, periodo, pdf, excel });
+      } catch {
+        if (!cancelado) setErrorExportacion("No se pudieron preparar los reportes. Intenta nuevamente.");
+      }
+    }
+    void preparar();
+    return () => { cancelado = true; };
+  }, [abierto, filas, anio, mes, semana, periodo, reintento]);
+
+  function descargar(formato: "pdf" | "excel") {
+    if (!listo || !archivos) return;
+    const extension = formato === "pdf" ? "pdf" : "xlsx";
+    void entregarArchivo(archivos[formato], `Resumen_ventas_${periodo}.${extension}`)
+      .catch(() => setErrorExportacion("No se pudo descargar el reporte. Intenta nuevamente."));
+  }
 
   const totalGeneral = filas.reduce((s, f) => s + f.total, 0);
   const ticketsGeneral = filas.reduce((s, f) => s + f.pagados, 0);
@@ -117,8 +144,20 @@ export function ResumenVentasDialog({ abierto, onOpenChange, pedidos }: Props) {
         </DialogHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <Button variant="outline" className="h-11 flex-1 sm:flex-none" disabled={!listo} onClick={() => descargar("pdf")} title="Descargar reporte en PDF">
+              <FileDown className="mr-2 h-4 w-4" aria-hidden="true" /> PDF
+            </Button>
+            <Button variant="outline" className="h-11 flex-1 sm:flex-none" disabled={!listo} onClick={() => descargar("excel")} title="Descargar reporte en Excel">
+              <FileSpreadsheet className="mr-2 h-4 w-4" aria-hidden="true" /> Excel
+            </Button>
+            {filas.length > 0 && !listo && !errorExportacion && (
+              <span role="status" className="flex items-center gap-2 text-xs text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin motion-reduce:animate-none" aria-hidden="true" /> Preparando reportes…</span>
+            )}
+          </div>
+          {errorExportacion && <div role="alert" className="mb-3 text-sm text-destructive">{errorExportacion} <Button variant="link" className="h-11" onClick={() => setReintento((valor) => valor + 1)}>Reintentar</Button></div>}
           <div className="grid gap-2 sm:grid-cols-2">
-            <Select value={mes} onValueChange={setMes}>
+            <Select value={mes} onValueChange={(value) => { setMes(value); setSemana("todos"); }}>
               <SelectTrigger className="h-11" aria-label="Filtrar por mes">
                 <SelectValue placeholder="Mes" />
               </SelectTrigger>
@@ -131,7 +170,7 @@ export function ResumenVentasDialog({ abierto, onOpenChange, pedidos }: Props) {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={anio} onValueChange={setAnio}>
+            <Select value={anio} onValueChange={(value) => { setAnio(value); setSemana("todos"); }}>
               <SelectTrigger className="h-11" aria-label="Filtrar por año">
                 <SelectValue placeholder="Año" />
               </SelectTrigger>
