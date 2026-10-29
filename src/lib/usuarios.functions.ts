@@ -21,9 +21,17 @@ export const eliminarUsuario = createServerFn({ method: "POST" })
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
-    await supabaseAdmin.from("usuarios").delete().eq("id", data.userId);
+
+    const { error: rolesErr } = await supabaseAdmin
+      .from("user_roles").delete().eq("user_id", data.userId);
+    if (rolesErr) throw new Error(rolesErr.message);
+
+    const { error: usuarioErr } = await supabaseAdmin
+      .from("usuarios").delete().eq("id", data.userId);
+    if (usuarioErr) throw new Error(usuarioErr.message);
+
     const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
     if (error) throw new Error(error.message);
+
     return { ok: true };
   });

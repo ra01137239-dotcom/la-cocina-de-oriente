@@ -32,10 +32,15 @@ export function AuditoriaDetalleDialog({ registro, onOpenChange }: Props) {
     return formatearValor(valor);
   };
 
-  const entidadLegible =
-    registro?.entity_id && nombres[registro.entity_id]
-      ? nombres[registro.entity_id]
-      : (registro?.entity_id ?? "—");
+  const nombreDesdeHistorial = 
+    registro?.old_values?.['nombre'] ? String(registro.old_values['nombre']) :
+    registro?.new_values?.['nombre'] ? String(registro.new_values['nombre']) : null;
+
+  const nombreDesdeHook = registro?.entity_id ? nombres[registro.entity_id] : null;
+
+  const entidadLegible = nombreDesdeHistorial 
+    ? `${nombreDesdeHistorial} ${registro?.action === 'ELIMINAR' ? '(Eliminado)' : ''}`
+    : (nombreDesdeHook ?? (registro?.entity_id ? `ID: ${registro.entity_id.substring(0, 8)}...` : "—"));
 
   return (
     <Dialog open={!!registro} onOpenChange={onOpenChange}>
@@ -84,7 +89,7 @@ export function AuditoriaDetalleDialog({ registro, onOpenChange }: Props) {
               </div>
               <div className="col-span-2 min-w-0 sm:col-span-3">
                 <dt className="text-muted-foreground">Registro afectado</dt>
-                <dd className="break-all font-mono text-[11px]">
+                <dd className="break-all font-medium text-sm">
                   {registro.entity_type} · {entidadLegible}
                 </dd>
               </div>

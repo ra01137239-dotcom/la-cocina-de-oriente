@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAuditoriaRouteImport } from './routes/_authenticated/auditoria'
+import { Route as AuthenticatedCopiaSeguridadRouteImport } from './routes/_authenticated/copia-seguridad'
 import { Route as AuthenticatedHistorialRouteImport } from './routes/_authenticated/historial'
 import { Route as AuthenticatedInventarioRouteImport } from './routes/_authenticated/inventario'
 import { Route as AuthenticatedPedidoActivosRouteImport } from './routes/_authenticated/pedido-activos'
@@ -38,6 +39,12 @@ const AuthenticatedAuditoriaRoute = AuthenticatedAuditoriaRouteImport.update({
   path: '/auditoria',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCopiaSeguridadRoute =
+  AuthenticatedCopiaSeguridadRouteImport.update({
+    id: '/copia-seguridad',
+    path: '/copia-seguridad',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHistorialRoute = AuthenticatedHistorialRouteImport.update({
   id: '/historial',
   path: '/historial',
@@ -69,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/reset-password': typeof ResetPasswordRoute
   '/auditoria': typeof AuthenticatedAuditoriaRoute
+  '/copia-seguridad': typeof AuthenticatedCopiaSeguridadRoute
   '/historial': typeof AuthenticatedHistorialRoute
   '/inventario': typeof AuthenticatedInventarioRoute
   '/pedido-activos': typeof AuthenticatedPedidoActivosRoute
@@ -79,6 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/reset-password': typeof ResetPasswordRoute
   '/auditoria': typeof AuthenticatedAuditoriaRoute
+  '/copia-seguridad': typeof AuthenticatedCopiaSeguridadRoute
   '/historial': typeof AuthenticatedHistorialRoute
   '/inventario': typeof AuthenticatedInventarioRoute
   '/pedido-activos': typeof AuthenticatedPedidoActivosRoute
@@ -91,6 +100,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/auditoria': typeof AuthenticatedAuditoriaRoute
+  '/_authenticated/copia-seguridad': typeof AuthenticatedCopiaSeguridadRoute
   '/_authenticated/historial': typeof AuthenticatedHistorialRoute
   '/_authenticated/inventario': typeof AuthenticatedInventarioRoute
   '/_authenticated/pedido-activos': typeof AuthenticatedPedidoActivosRoute
@@ -103,6 +113,7 @@ export interface FileRouteTypes {
     | '/'
     | '/reset-password'
     | '/auditoria'
+    | '/copia-seguridad'
     | '/historial'
     | '/inventario'
     | '/pedido-activos'
@@ -113,6 +124,7 @@ export interface FileRouteTypes {
     | '/'
     | '/reset-password'
     | '/auditoria'
+    | '/copia-seguridad'
     | '/historial'
     | '/inventario'
     | '/pedido-activos'
@@ -124,6 +136,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/reset-password'
     | '/_authenticated/auditoria'
+    | '/_authenticated/copia-seguridad'
     | '/_authenticated/historial'
     | '/_authenticated/inventario'
     | '/_authenticated/pedido-activos'
@@ -167,6 +180,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAuditoriaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/copia-seguridad': {
+      id: '/_authenticated/copia-seguridad'
+      path: '/copia-seguridad'
+      fullPath: '/copia-seguridad'
+      preLoaderRoute: typeof AuthenticatedCopiaSeguridadRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/historial': {
       id: '/_authenticated/historial'
       path: '/historial'
@@ -207,6 +227,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAuditoriaRoute: typeof AuthenticatedAuditoriaRoute
+  AuthenticatedCopiaSeguridadRoute: typeof AuthenticatedCopiaSeguridadRoute
   AuthenticatedHistorialRoute: typeof AuthenticatedHistorialRoute
   AuthenticatedInventarioRoute: typeof AuthenticatedInventarioRoute
   AuthenticatedPedidoActivosRoute: typeof AuthenticatedPedidoActivosRoute
@@ -216,6 +237,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAuditoriaRoute: AuthenticatedAuditoriaRoute,
+  AuthenticatedCopiaSeguridadRoute: AuthenticatedCopiaSeguridadRoute,
   AuthenticatedHistorialRoute: AuthenticatedHistorialRoute,
   AuthenticatedInventarioRoute: AuthenticatedInventarioRoute,
   AuthenticatedPedidoActivosRoute: AuthenticatedPedidoActivosRoute,

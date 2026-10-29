@@ -179,15 +179,17 @@ export function useNombresEntidades(uuids: string[], habilitado = true) {
       ];
       await Promise.all(
         tablas.map(async ([tabla, etiqueta]) => {
-          const { data } = await (supabase.from as (t: string) => any)(tabla)
-            .select(tabla === "pedidos" ? "id, numero_ticket" : "id, nombre")
+          const campoNombre = tabla === "pedidos" ? "numero_ticket" : "nombre";
+          const { data, error } = await (supabase.from as (t: string) => any)(tabla)
+            .select(`id, ${campoNombre}`)
             .in("id", uuids);
-          for (const fila of (data ?? []) as unknown as {
-            id: string;
-            nombre?: string;
-            numero_ticket?: string;
-          }[]) {
-            mapa[fila.id] = `${fila.nombre ?? fila.numero_ticket ?? fila.id} (${etiqueta})`;
+          if (!error && data) {
+            for (const fila of data as unknown as Array<{ id: string } & Record<string, any>>) {
+              const texto = fila[campoNombre];
+              if (fila.id && texto) {
+                mapa[fila.id] = `${texto} (${etiqueta})`;
+              }
+            }
           }
         }),
       );

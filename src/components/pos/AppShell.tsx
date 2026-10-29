@@ -75,6 +75,13 @@ const TABS = [
     icon: ShieldCheck,
     soloAdmin: true,
   },
+  {
+    to: "/copia-seguridad",
+    corto: "Copia de Seguridad",
+    label: "Copia de Seguridad",
+    icon: ShieldCheck,
+    soloAdmin: true,
+  },
 ] as const;
 
 function Reloj() {
