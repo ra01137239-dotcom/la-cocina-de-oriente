@@ -1,9 +1,12 @@
-
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-
+import { useServerFn } from "@tanstack/react-start";
+import { Checkbox } from "@/components/ui/checkbox";
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { registroSchema } from "@/lib/registro-schema";
+import { crearCuenta } from "@/lib/registro.functions";
 import { Logo } from "@/components/pos/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +24,8 @@ export const Route = createFileRoute("/")({
           "Sistema de punto de venta para pupuserías salvadoreñas: pedidos, inventario de materia prima, tickets térmicos e historial de ventas.",
       },
       { property: "og:title", content: "La Cocina de Oriente POS" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         property: "og:description",
         content:
@@ -31,22 +36,19 @@ export const Route = createFileRoute("/")({
   component: LoginPage,
 });
 
-const CHIPS = [
-  "Pupusas",
-  "Bebidas",
-  "Acompañamientos",
-  "Comedor",
-  "Para llevar",
-];
+const CHIPS = ["Pupusas", "Bebidas", "Acompañamientos", "Comedor", "Para llevar",];
 
 function LoginPage() {
   const navigate = useNavigate();
-
   const [modo, setModo] = useState<"entrar" | "registrar">("entrar");
   const [correo, setCorreo] = useState("");
   const [clave, setClave] = useState("");
   const [mostrarClave, setMostrarClave] = useState(false);
   const [cargando, setCargando] = useState(false);
+  const [confirmarEdad, setConfirmarEdad] = useState(false);
+  const [mayorDeEdad, setMayorDeEdad] = useState(false);
+  const registrar = useServerFn(crearCuenta);
+
 
   useEffect(() => {
     let activo = true;
@@ -102,54 +104,74 @@ function LoginPage() {
   }
 
   async function enviar(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setCargando(true);
+  e.preventDefault();
 
-    try {
-      if (modo === "registrar") {
-        const { data, error } = await supabase.auth.signUp({
-          email: correo.trim(),
-          password: clave,
-          options: {
-            emailRedirectTo: window.location.origin,
-          },
-        });
+  if (modo === "registrar") {
+    // Valida correo y contraseña antes de pedir la confirmación de edad
+    const validacion = registroSchema.safeParse({
+      correo: correo.trim(),
+      clave,
+      mayorDeEdad: true,
+    });
+    if (!validacion.success) {
+      toast.error(validacion.error.issues[0]?.message ?? "Revisa tus datos");
+      return;
+    }
 
-        if (error) throw error;
+    setMayorDeEdad(false);
+    setConfirmarEdad(true);
+    return;
+  }
 
-        if (!data.session) {
-          toast.success(
-            "Cuenta creada. Revisa tu correo para confirmarla."
-          );
-          setModo("entrar");
-          setClave("");
-          setMostrarClave(false);
-          return;
-        }
+  await procesar(false);
+}
 
-        toast.success("¡Cuenta creada correctamente!");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: correo.trim(),
-          password: clave,
-        });
+async function procesar(confirmado: boolean) {
+  // En registro, nunca continuar sin la confirmación de edad
+  if (modo === "registrar" && !confirmado) return;
 
-        if (error) throw error;
+  setCargando(true);
 
-        toast.success("¡Bienvenido a La Cocina de Oriente!");
+  try {
+    if (modo === "registrar") {
+      const data = await registrar({
+        data: { correo: correo.trim(), clave, mayorDeEdad: confirmado },
+      });
+
+      setConfirmarEdad(false);
+
+      if (!data.session) {
+        toast.success("Cuenta creada. Revisa tu correo para confirmarla.");
+        setModo("entrar");
+        setClave("");
+        setMostrarClave(false);
+        return;
       }
 
-      navigate({ to: "/pos", replace: true });
-    } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "No se pudo iniciar sesión"
-      );
-    } finally {
-      setCargando(false);
+      const { error } = await supabase.auth.setSession(data.session);
+      if (error) throw error;
+
+      toast.success("¡Cuenta creada correctamente!");
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: correo.trim(),
+        password: clave,
+      });
+      if (error) throw error;
+
+      toast.success("¡Bienvenido a La Cocina de Oriente!");
     }
+
+    navigate({ to: "/pos", replace: true });
+  } catch (error) {
+    setConfirmarEdad(false);
+    toast.error(
+      error instanceof Error ? error.message : "No se pudo iniciar sesión"
+    );
+  } finally {
+    setCargando(false);
   }
+}
 
   return (
     <div className="min-h-screen bg-brand px-4 py-8 text-brand-foreground sm:px-8">
@@ -332,6 +354,24 @@ function LoginPage() {
           </button>
         </section>
       </div>
+      <AlertDialog open={confirmarEdad} onOpenChange={(open) => { if (!cargando) setConfirmarEdad(open); }}>
+        <AlertDialogContent className="max-w-[calc(100%-2rem)] sm:max-w-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar mayoría de edad</AlertDialogTitle>
+            <AlertDialogDescription>Para crear tu cuenta, confirma que eres mayor de 18 años.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <Label htmlFor="mayor-edad" className="flex min-h-11 cursor-pointer items-center gap-3 py-2 leading-relaxed">
+            <Checkbox id="mayor-edad" checked={mayorDeEdad} onCheckedChange={(value) => setMayorDeEdad(value === true)} disabled={cargando} />
+            Confirmo que soy mayor de 18 años
+          </Label>
+          <AlertDialogFooter className="gap-2">
+            <Button variant="outline" className="h-11" disabled={cargando} onClick={() => setConfirmarEdad(false)}>Cancelar</Button>
+            <Button variant="flame" className="h-11" disabled={!mayorDeEdad || cargando} onClick={() => void procesar(mayorDeEdad)}>
+              {cargando ? "Creando cuenta…" : "Confirmar y crear cuenta"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
