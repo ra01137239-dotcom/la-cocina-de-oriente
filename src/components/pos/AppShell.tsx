@@ -12,6 +12,7 @@ import {
   Store,
   UserCog,
   Users,
+  Code2,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -81,6 +82,13 @@ const TABS = [
     label: "Copia de Seguridad",
     icon: ShieldCheck,
     soloAdmin: true,
+  },
+  {
+    to: "/autores",
+    corto: "Autores",
+    label: "Autores",
+    icon: Code2,
+    soloAdmin: false,
   },
 ] as const;
 
@@ -161,9 +169,11 @@ export function AppShell({
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 bg-brand text-brand-foreground shadow-lifted">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-3 px-3 py-3 sm:px-5">
-          {/* Barra superior */}
+
+          {/* BARRA SUPERIOR */}
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-            {/* Logo y nombre del negocio */}
+
+            {/* LOGO Y NOMBRE */}
             <div className="flex min-w-0 items-center gap-3">
               <Logo size="sm" />
 
@@ -178,7 +188,7 @@ export function AppShell({
               </div>
             </div>
 
-            {/* Notificaciones, impresora, reloj y perfil */}
+            {/* NOTIFICACIONES, IMPRESORA, RELOJ Y PERFIL */}
             <div className="flex shrink-0 items-center gap-2 sm:gap-4">
               <Notification />
 
@@ -233,7 +243,7 @@ export function AppShell({
             </div>
           </div>
 
-          {/* Navegación en tablet y escritorio */}
+          {/* NAVEGACIÓN EN TABLET Y ESCRITORIO */}
           <nav className="-mx-1 hidden items-stretch gap-1 overflow-x-auto pb-0.5 sm:flex">
             {tabs.map((tab) => (
               <Link
@@ -249,10 +259,11 @@ export function AppShell({
               </Link>
             ))}
           </nav>
+          
         </div>
       </header>
 
-      {/* Contenido de las páginas */}
+      {/* CONTENIDO DE LAS PÁGINAS */}
       <main className="mx-auto min-w-0 max-w-[1600px] overflow-x-clip px-3 pb-24 pt-4 sm:px-5 sm:py-6 sm:pb-6">
         {pendiente ? (
           <div className="mx-auto max-w-md rounded-xl border border-dashed p-10 text-center">
@@ -270,18 +281,19 @@ export function AppShell({
         )}
       </main>
 
-      {/* Navegación inferior en móviles */}
+      {/* NAVEGACIÓN INFERIOR EN MÓVILES */}
       <nav
+      className="fixed inset-x-0 bottom-0 z-40 grid border-t bg-card pb-[env(safe-area-inset-bottom)] shadow-lifted sm:hidden"
         style={{
           gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))`,
         }}
-        className="fixed inset-x-0 bottom-0 z-40 grid border-t bg-card pb-[env(safe-area-inset-bottom)] shadow-lifted sm:hidden"
+        //className="fixed inset-x-0 bottom-0 z-40 grid border-t bg-card pb-[env(safe-area-inset-bottom)] shadow-lifted"
       >
         {tabs.map((tab) => (
           <Link
             key={tab.to}
             to={tab.to}
-            className="flex min-h-[56px] flex-col items-center justify-center gap-1 px-1 text-[11px] font-semibold text-muted-foreground"
+            className="flex min-h-[56px] flex-col items-center justify-center gap-1 px-0.5 text-[10px] font-semibold text-muted-foreground"
             activeProps={{ className: "text-flame" }}
           >
             <tab.icon className="h-5 w-5" />
@@ -290,7 +302,7 @@ export function AppShell({
         ))}
       </nav>
 
-      {/* Diálogo de edición de perfil */}
+      {/* DIÁLOGO DE EDICIÓN DE PERFIL */}
       <PerfilDialog
         perfil={perfil}
         open={editarPerfil}
