@@ -2,6 +2,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import logoUrl from "@/assets/LaCocinaDeOriente.png";
 import {
   Eye,
   EyeOff,
@@ -32,11 +33,24 @@ import { NEGOCIO } from "@/lib/pos";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "La Cocina de Oriente | Punto de Venta" },
+      {
+        title: "La Cocina de Oriente | Sistema de Gestión Gastronómica",
+      },
       {
         name: "description",
         content:
-          "Sistema de punto de venta para La Cocina de Oriente. Administra pedidos, inventario, ventas y tickets desde cualquier dispositivo.",
+          "Sistema de gestión gastronómica de La Cocina de Oriente. Administra ventas, pedidos, inventario, usuarios, auditoría y reportes desde una plataforma intuitiva y segura.",
+      },
+      {
+        name: "theme-color",
+        content: "#103C32",
+      },
+    ],
+    links: [
+      {
+        rel: "icon",
+        type: "image/png",
+        href: logoUrl,
       },
     ],
   }),
