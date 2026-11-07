@@ -19,6 +19,7 @@ import { Route as AuthenticatedInventarioRouteImport } from './routes/_authentic
 import { Route as AuthenticatedPedidoActivosRouteImport } from './routes/_authenticated/pedido-activos'
 import { Route as AuthenticatedPosRouteImport } from './routes/_authenticated/pos'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
+import { Route as ApiPublicBackupCronRouteImport } from './routes/api/public/backup-cron'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -71,6 +72,11 @@ const AuthenticatedUsuariosRoute = AuthenticatedUsuariosRouteImport.update({
   path: '/usuarios',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicBackupCronRoute = ApiPublicBackupCronRouteImport.update({
+  id: '/api/public/backup-cron',
+  path: '/api/public/backup-cron',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/pedido-activos': typeof AuthenticatedPedidoActivosRoute
   '/pos': typeof AuthenticatedPosRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/api/public/backup-cron': typeof ApiPublicBackupCronRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/pedido-activos': typeof AuthenticatedPedidoActivosRoute
   '/pos': typeof AuthenticatedPosRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/api/public/backup-cron': typeof ApiPublicBackupCronRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/_authenticated/pedido-activos': typeof AuthenticatedPedidoActivosRoute
   '/_authenticated/pos': typeof AuthenticatedPosRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
+  '/api/public/backup-cron': typeof ApiPublicBackupCronRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -119,6 +128,7 @@ export interface FileRouteTypes {
     | '/pedido-activos'
     | '/pos'
     | '/usuarios'
+    | '/api/public/backup-cron'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
     | '/pedido-activos'
     | '/pos'
     | '/usuarios'
+    | '/api/public/backup-cron'
   id:
     | '__root__'
     | '/'
@@ -142,12 +153,14 @@ export interface FileRouteTypes {
     | '/_authenticated/pedido-activos'
     | '/_authenticated/pos'
     | '/_authenticated/usuarios'
+    | '/api/public/backup-cron'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicBackupCronRoute: typeof ApiPublicBackupCronRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -222,6 +235,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsuariosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/backup-cron': {
+      id: '/api/public/backup-cron'
+      path: '/api/public/backup-cron'
+      fullPath: '/api/public/backup-cron'
+      preLoaderRoute: typeof ApiPublicBackupCronRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -252,6 +272,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicBackupCronRoute: ApiPublicBackupCronRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

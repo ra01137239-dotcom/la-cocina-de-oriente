@@ -1,11 +1,9 @@
-// src/start.ts
-import { createStart, createCsrfMiddleware  } from '@tanstack/react-start'
-
-// Middleware de seguridad para proteger las server functions de ataques cruzados.
+import { createStart, createCsrfMiddleware } from '@tanstack/react-start';
+import { backupSession } from './lib/backup-session';
 const csrfMiddleware = createCsrfMiddleware({
-  filter: (ctx) => ctx.handlerType === "serverFn",
+  filter: (ctx) => ctx.handlerType === 'serverFn',
 });
-
 export const startInstance = createStart(() => ({
-    requestMiddleware: [csrfMiddleware],
-}))
+  requestMiddleware: [csrfMiddleware],
+  functionMiddleware: [backupSession],
+}));
