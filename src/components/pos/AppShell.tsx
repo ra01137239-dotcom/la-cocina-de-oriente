@@ -1,5 +1,4 @@
-
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import Notification from "@/components/ui/Notification";
 import {
@@ -9,12 +8,14 @@ import {
   LogOut,
   Package,
   ShieldCheck,
-  Store,
   UserCog,
   Users,
+  Code2,
+  CircleHelp,
+  MoreHorizontal, // 👈 Añadido
 } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { ImpresoraBluetooth } from "./ImpresoraBluetooth";
 import { Logo } from "./Logo";
 import { PerfilDialog } from "./PerfilDialog";
@@ -32,19 +33,13 @@ import { usePerfil, useEsAdmin } from "@/lib/data";
 import { supabase } from "@/integrations/supabase/client";
 import { NEGOCIO } from "@/lib/pos";
 
+// MÓDULOS DEL SISTEMA
 const TABS = [
-  {
+    {
     to: "/pos",
-    label: "Punto de Venta",
-    corto: "Venta",
-    icon: Store,
-    soloAdmin: false,
-  },
-  {
-    to: "/inventario",
-    label: "Inventario",
-    corto: "Inventario",
-    icon: Package,
+    label: "Solicitar Pedidos",
+    corto: "Pos",
+    icon: ClipboardList,
     soloAdmin: false,
   },
   {
@@ -52,6 +47,13 @@ const TABS = [
     label: "Pedidos Activos",
     corto: "Activos",
     icon: ClipboardList,
+    soloAdmin: false,
+  },
+    {
+    to: "/inventario",
+    label: "Inventario",
+    corto: "Inventario",
+    icon: Package,
     soloAdmin: false,
   },
   {
@@ -77,13 +79,26 @@ const TABS = [
   },
   {
     to: "/copia-seguridad",
-    corto: "Copia de Seguridad",
     label: "Copia de Seguridad",
+    corto: "Copia de Seguridad",
     icon: ShieldCheck,
     soloAdmin: true,
   },
+  {
+    to: "/autores",
+    label: "Autores",
+    corto: "Autores",
+    icon: Code2,
+    soloAdmin: false,
+  },
+  { to: "/ayuda", 
+    label: "Centro de Ayuda", 
+    corto: "Ayuda", 
+    icon: CircleHelp, 
+    soloAdmin: false },
 ] as const;
 
+// RELOJ DEL SISTEMA
 function Reloj() {
   const [hora, setHora] = useState("");
 
@@ -112,6 +127,7 @@ function Reloj() {
   );
 }
 
+// ESTRUCTURA PRINCIPAL DEL SISTEMA
 export function AppShell({
   children,
 }: {
@@ -122,12 +138,20 @@ export function AppShell({
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const location = useLocation(); // 👈 Añadido
 
   const [editarPerfil, setEditarPerfil] = useState(false);
 
   const tabs = TABS.filter(
     (tab) => !tab.soloAdmin || esAdmin
   );
+
+  // 👇 Lógica para separar los tabs en móvil
+  const MAX_TABS_MOVIL = 4; 
+  const tabsVisibles = tabs.slice(0, MAX_TABS_MOVIL);
+  const tabsOcultos = tabs.slice(MAX_TABS_MOVIL);
+  const hayOcultos = tabsOcultos.length > 0;
+  const enTabOculto = tabsOcultos.some((t) => t.to === location.pathname);
 
   const pendiente =
     !!perfil && !perfil.aprobado && !esAdmin;
@@ -159,11 +183,16 @@ export function AppShell({
 
   return (
     <div className="min-h-screen bg-background">
+
+      {/* ENCABEZADO PRINCIPAL */}
       <header className="sticky top-0 z-40 bg-brand text-brand-foreground shadow-lifted">
+
         <div className="mx-auto flex max-w-[1600px] flex-col gap-3 px-3 py-3 sm:px-5">
-          {/* Barra superior */}
+
+          {/* BARRA SUPERIOR */}
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-            {/* Logo y nombre del negocio */}
+
+            {/* LOGO */}
             <div className="flex min-w-0 items-center gap-3">
               <Logo size="sm" />
 
@@ -178,8 +207,9 @@ export function AppShell({
               </div>
             </div>
 
-            {/* Notificaciones, impresora, reloj y perfil */}
+            {/* ACCIONES SUPERIORES */}
             <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+
               <Notification />
 
               <ImpresoraBluetooth />
@@ -207,6 +237,7 @@ export function AppShell({
                 </DropdownMenuTrigger>
 
                 <DropdownMenuContent align="end" className="w-56">
+
                   <DropdownMenuLabel className="truncate">
                     {perfil?.nombre ?? "Usuaria"}
                   </DropdownMenuLabel>
@@ -228,34 +259,41 @@ export function AppShell({
                     <LogOut className="mr-2 h-4 w-4" />
                     Cerrar Sesión
                   </DropdownMenuItem>
+
                 </DropdownMenuContent>
               </DropdownMenu>
+
             </div>
           </div>
 
-          {/* Navegación en tablet y escritorio */}
-          <nav className="-mx-1 hidden items-stretch gap-1 overflow-x-auto pb-0.5 sm:flex">
+          {/* NAVEGACIÓN DE ESCRITORIO */}
+          <nav className="-mx-1 flex items-stretch gap-1 overflow-x-auto pb-0.5">
+
             {tabs.map((tab) => (
               <Link
                 key={tab.to}
                 to={tab.to}
                 className="shrink-0 rounded-lg px-3 py-2.5 text-sm font-semibold text-brand-foreground/70 transition-colors hover:bg-brand-deep hover:text-brand-foreground"
                 activeProps={{
-                  className:
-                    "bg-flame text-flame-foreground hover:bg-flame",
+                  className:"bg-flame text-flame-foreground hover:bg-flame",
                 }}
               >
                 {tab.label}
               </Link>
             ))}
+
           </nav>
+
         </div>
       </header>
 
-      {/* Contenido de las páginas */}
+      {/* CONTENIDO PRINCIPAL */}
       <main className="mx-auto min-w-0 max-w-[1600px] overflow-x-clip px-3 pb-24 pt-4 sm:px-5 sm:py-6 sm:pb-6">
+
         {pendiente ? (
+
           <div className="mx-auto max-w-md rounded-xl border border-dashed p-10 text-center">
+
             <p className="text-base font-semibold">
               Tu cuenta está pendiente de admisión
             </p>
@@ -264,38 +302,86 @@ export function AppShell({
               Pídele al administrador del negocio que apruebe tu
               acceso para empezar a usar el punto de venta.
             </p>
+
           </div>
+
         ) : (
           children
         )}
+
       </main>
 
-      {/* Navegación inferior en móviles */}
+      {/* NAVEGACIÓN INFERIOR PARA MÓVILES */}
       <nav
-        style={{
-          gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))`,
-        }}
         className="fixed inset-x-0 bottom-0 z-40 grid border-t bg-card pb-[env(safe-area-inset-bottom)] shadow-lifted sm:hidden"
+        style={{
+          gridTemplateColumns: `repeat(${tabsVisibles.length + (hayOcultos ? 1 : 0)}, minmax(0, 1fr))`,
+        }}
       >
-        {tabs.map((tab) => (
+
+        {/* TABS VISIBLES EN LA BARRA INFERIOR */}
+        {tabsVisibles.map((tab) => (
           <Link
             key={tab.to}
             to={tab.to}
-            className="flex min-h-[56px] flex-col items-center justify-center gap-1 px-1 text-[11px] font-semibold text-muted-foreground"
-            activeProps={{ className: "text-flame" }}
+            className="flex min-h-[56px] min-w-0 flex-col items-center justify-center gap-1 px-1 text-[10px] font-semibold text-muted-foreground"
+            activeProps={{
+              className: "text-flame",
+            }}
           >
-            <tab.icon className="h-5 w-5" />
-            <span className="truncate">{tab.corto}</span>
+            <tab.icon className="h-5 w-5 shrink-0" />
+            <span className="w-full truncate text-center">{tab.corto}</span>
           </Link>
         ))}
+
+        {/* BOTÓN "MÁS" CON DROPDOWN */}
+        {hayOcultos && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className={`flex min-h-[56px] min-w-0 flex-col items-center justify-center gap-1 px-1 text-[10px] font-semibold outline-none ${
+                  enTabOculto ? "text-flame" : "text-muted-foreground"
+                }`}
+              >
+                <MoreHorizontal className="h-5 w-5 shrink-0" />
+                <span className="w-full truncate text-center">Más</span>
+              </button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent side="top" align="end" className="mb-2 w-56">
+              <DropdownMenuLabel className="text-xs text-muted-foreground">
+                Más módulos
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              
+              {tabsOcultos.map((tab) => (
+                <DropdownMenuItem key={tab.to} asChild>
+                  <Link
+                    to={tab.to}
+                    className="flex w-full cursor-pointer items-center gap-3 py-2.5 font-semibold"
+                    activeProps={{
+                      className: "text-flame",
+                    }}
+                  >
+                    <tab.icon className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{tab.label}</span>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
       </nav>
 
-      {/* Diálogo de edición de perfil */}
+      {/* EDICIÓN DE PERFIL */}
       <PerfilDialog
         perfil={perfil}
         open={editarPerfil}
         onOpenChange={setEditarPerfil}
       />
+
     </div>
   );
 }

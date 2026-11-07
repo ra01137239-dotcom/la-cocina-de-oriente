@@ -13,7 +13,7 @@ const input = z.discriminatedUnion('action', [
   z.object({ action: z.literal('restore'), id: z.string().uuid(), operationId: z.string().uuid(), confirmation: z.literal('RESTAURAR'), salesStopped: z.literal(true) }),
 ]);
 export type BackupInput = z.input<typeof input>;
-export const backupAction = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((data: unknown) => input.parse(data)).handler(async ({ data, context }) => {
+export const backupAction = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).validator((data: unknown) => input.parse(data)).handler(async ({ data, context }) => {
   // Validate through Auth (not editable profile/storage or frontend actor ID).
   setResponseHeader('Cache-Control', 'no-store');
   const authorization = getRequest().headers.get('authorization');

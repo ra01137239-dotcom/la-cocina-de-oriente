@@ -23,7 +23,7 @@ export const Route = createFileRoute('/_authenticated/copia-seguridad')({
 const formatDate = (value: string) => new Date(value).toLocaleString('es-SV', { timeZone: 'America/El_Salvador' });
 const label = (kind: BackupRow['kind']) => kind === 'automatico' ? 'Automático' : kind === 'manual' ? 'Manual' : 'Preventivo';
 const PENDING_KEY = 'cocina-restore-operation'; // Only operation UUID; never tokens or business records.
-export function CopiasSeguridad() {
+function CopiasSeguridad() {
   const { esAdmin, cargando } = useEsAdmin(), action = useServerFn(backupAction), queryClient = useQueryClient();
   const [schedule, setSchedule] = useState<{ next_auto: string; last_auto: string | null; busy_until: string | null; cronActive: boolean | null; cronSchedule: string | null; lastCronStatus: string | null } | null>(null);
   const [rows, setRows] = useState<BackupRow[]>([]), [total, setTotal] = useState(0), [offset, setOffset] = useState(0);
