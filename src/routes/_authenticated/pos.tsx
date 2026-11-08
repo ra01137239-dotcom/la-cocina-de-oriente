@@ -256,7 +256,7 @@ function PuntoDeVenta() {
       } else {
         await persistir("pagado");
         imprimirTicket(textoCliente);
-        toast.success("Pago registrado en efectivo");
+        toast.success(`Pago registrado por ${metodoPago === "transferencia" ? "transferencia" : "efectivo"}`);
         nuevoPedido();
       }
       await queryClient.invalidateQueries({ queryKey: ["pedidos"] });

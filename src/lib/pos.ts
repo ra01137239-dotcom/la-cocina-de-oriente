@@ -176,7 +176,7 @@ export function renderTicket(
           LINE,
           fila("TOTAL", money(pedido.total)),
           LINE,
-          "Forma de pago: EFECTIVO",
+          `Forma de pago: ${(pedido.metodoPago ?? "efectivo").toUpperCase()}`,
           "¡Gracias por su preferencia!",
         ];
 

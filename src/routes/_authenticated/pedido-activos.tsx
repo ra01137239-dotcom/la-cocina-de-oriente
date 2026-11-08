@@ -13,15 +13,14 @@ import {
  AlertDialogFooter,
  AlertDialogHeader,
  AlertDialogTitle,
-
-
- 
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { TicketPreviewDialog } from "@/components/pos/TicketPreviewDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { imprimirTicket, usePedidos, usePerfil } from "@/lib/data";
-import { money, renderTicket, type Pedido } from "@/lib/pos";
+import { money, renderTicket, type MetodoPago, type Pedido } from "@/lib/pos";
 
 export const Route = createFileRoute("/_authenticated/pedido-activos")({
  head: () => ({
@@ -48,6 +47,9 @@ function PedidosActivos() {
  const [aEliminar, setAEliminar] = useState<Pedido | null>(null);
  const [eliminando, setEliminando] = useState(false);
 
+
+ const [metodoPago, setMetodoPago] = useState<MetodoPago>("efectivo");
+
  async function eliminarPedido() {
  if (!aEliminar) return;
  setEliminando(true);
@@ -66,7 +68,7 @@ function PedidosActivos() {
 
  const activos = pedidos.filter((p) => p.estado !== "pagado" && p.estado !== "cancelado");
 
- function texto(pedido: Pedido, variante: "cocina" | "cliente") {
+ function texto(pedido: Pedido, variante: "cocina" | "cliente", metodo?: MetodoPago) {
  return renderTicket(
  {
  numeroTicket: pedido.numero_ticket,
@@ -76,6 +78,7 @@ function PedidosActivos() {
  total: Number(pedido.total),
  fecha: new Date(pedido.fecha_creacion),
  cajera: perfil?.nombre ?? "—",
+ ...(metodo ? { metodoPago: metodo } : {}),
  },
  variante,
  );
@@ -98,11 +101,17 @@ function PedidosActivos() {
  } else {
  const { error } = await supabase
  .from("pedidos")
- .update({ estado: "pagado", fecha_pago: new Date().toISOString() })
+ .update({ estado: "pagado", fecha_pago: new Date().toISOString(),
+    metodo_pago: metodoPago,
+  })
  .eq("id", seleccion.pedido.id);
  if (error) throw error;
- imprimirTicket(texto(seleccion.pedido, "cliente"));
- toast.success("Pago en efectivo registrado");
+ imprimirTicket(texto(seleccion.pedido, "cliente", metodoPago));
+ toast.success(
+              metodoPago === "transferencia"
+            ? "Pago por transferencia registrado"
+            : "Pago en efectivo registrado",
+        );
  }
  await queryClient.invalidateQueries({ queryKey: ["pedidos"] });
  setSeleccion(null);
@@ -118,21 +127,21 @@ function PedidosActivos() {
  <div className="min-w-0">
  <h1 className="truncate text-xl font-extrabold tracking-tight sm:text-2xl">Pedidos Activos</h1>
  <p className="text-xs text-muted-foreground">
- {activos.length} pedido(s) en curso · pago único en efectivo
+ {activos.length} pedido(s) en curso · cobro en efectivo o transferencia
  </p>
  </div>
 
  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
- {activos.map((pedido) => (
- <article key={pedido.id} className="space-y-3 rounded-xl border bg-card p-4 shadow-soft">
- <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
- <div className="min-w-0">
- <p className="truncate font-mono text-xs font-semibold text-brand">
- {pedido.numero_ticket}
- </p>
- <p className="truncate text-sm font-semibold">
- {pedido.tipo === "comedor" ? `Comedor · Mesa ${pedido.mesa ?? "—"}` : "Para llevar"}
- </p>
+    {activos.map((pedido) => (
+        <article key={pedido.id} className="space-y-3 rounded-xl border bg-card p-4 shadow-soft">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+                <div className="min-w-0">
+                    <p className="truncate font-mono text-xs font-semibold text-brand">
+                    {pedido.numero_ticket}
+                    </p>
+                    <p className="truncate text-sm font-semibold">
+                    {pedido.tipo === "comedor" ? `Comedor · Mesa ${pedido.mesa ?? "—"}` : "Para llevar"}
+                    </p>
  <p className="text-xs text-muted-foreground">
  {new Date(pedido.fecha_creacion).toLocaleTimeString("es-SV", {
  hour: "2-digit",
@@ -178,11 +187,14 @@ function PedidosActivos() {
  <Printer /> Imprimir Comanda
  </Button>
  <Button
- variant="flame"
- className="h-11"
- onClick={() => setSeleccion({ pedido, accion: "pago" })}
- disabled={!(pedido.items ?? []).length}
- >
+        variant="flame"
+            className="h-11"
+               onClick={() => {
+                  setMetodoPago("efectivo");
+                  setSeleccion({ pedido, accion: "pago" });
+                }}
+                disabled={!(pedido.items ?? []).length}
+            >
  <Wallet /> Cobrar
  </Button>
  </div>
@@ -206,11 +218,54 @@ function PedidosActivos() {
  ? "Revisa la comanda antes de imprimirla en cocina."
  : "Revisa el ticket antes de confirmar el pago en efectivo."
  }
- texto={seleccion ? texto(seleccion.pedido, seleccion.accion === "cocina" ? "cocina" : "cliente") : ""}
- confirmLabel={seleccion?.accion === "cocina" ? "Imprimir en Cocina" : "Confirmar Pago"}
- onConfirm={confirmar}
- procesando={procesando}
- />
+ texto={seleccion ? 
+    texto(
+        seleccion.pedido, 
+        seleccion.accion === "cocina" ? "cocina" : "cliente",
+        seleccion.accion === "pago" ? metodoPago : undefined,
+        ) : ""}
+        confirmLabel={seleccion?.accion === "cocina" ? "Imprimir en Cocina" : "Confirmar Pago"}
+        onConfirm={confirmar}
+        procesando={procesando}
+         extra={
+          seleccion?.accion === "pago" ? (
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Forma de pago</Label>
+              <RadioGroup
+                value={metodoPago}
+                onValueChange={(v) => setMetodoPago(v as MetodoPago)}
+                className="grid grid-cols-2 gap-2"
+              >
+                <Label
+                  htmlFor="pago-efectivo"
+                  className={`flex h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border text-sm font-semibold ${
+                    metodoPago === "efectivo"
+                      ? "border-flame bg-flame/10 text-flame"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  <RadioGroupItem id="pago-efectivo" value="efectivo" className="sr-only" />
+                  Efectivo
+                </Label>
+                <Label
+                  htmlFor="pago-transferencia"
+                  className={`flex h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border text-sm font-semibold ${
+                    metodoPago === "transferencia"
+                      ? "border-flame bg-flame/10 text-flame"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  <RadioGroupItem id="pago-transferencia" value="transferencia" className="sr-only" />
+                  Transferencia
+                </Label>
+              </RadioGroup>
+            </div>
+          ) : undefined
+        }
+      />
+
+
+
 
  <AlertDialog open={aEliminar !== null} onOpenChange={(o) => !o && setAEliminar(null)}>
  <AlertDialogContent>
