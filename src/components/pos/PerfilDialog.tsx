@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { comprimirFoto } from "@/lib/imagen";
 import type { PerfilUsuario } from "@/lib/pos";
 
 export function PerfilDialog({
@@ -29,6 +30,7 @@ export function PerfilDialog({
   const archivoRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ nombre: "", foto_url: "" });
   const [guardando, setGuardando] = useState(false);
+  const [procesandoFoto, setProcesandoFoto] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -38,26 +40,38 @@ export function PerfilDialog({
     });
   }, [open, perfil]);
 
-  function subirImagen(file: File) {
-    if (file.size > 1_500_000) {
-      toast.error("La imagen es muy grande (máximo 1.5 MB)");
+  async function subirImagen(file: File) {
+    // El límite solo protege al teléfono de procesar archivos enormes:
+    // la imagen se reduce a 128×128 antes de guardarse.
+    if (file.size > 10_000_000) {
+      toast.error("La imagen es muy grande (máximo 10 MB)");
       return;
     }
-    const lector = new FileReader();
-    lector.onload = () => setForm((f) => ({ ...f, foto_url: String(lector.result) }));
-    lector.readAsDataURL(file);
+    setProcesandoFoto(true);
+    try {
+      const foto = await comprimirFoto(file);
+      setForm((f) => ({ ...f, foto_url: foto }));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "No se pudo procesar la imagen");
+    } finally {
+      setProcesandoFoto(false);
+    }
   }
 
   async function guardar() {
     if (!perfil) return;
     setGuardando(true);
-    const { error } = await supabase
-      .from("usuarios")
-      .update({
-        nombre: form.nombre.trim() || perfil.nombre,
-        foto_url: form.foto_url.trim() || null,
-      })
-      .eq("id", perfil.id);
+
+    const cambios: { nombre: string; foto_url?: string | null } = {
+      nombre: form.nombre.trim() || perfil.nombre,
+    };
+    // Solo se envía la foto si cambió, para no reenviar una imagen sin modificar.
+    const fotoNueva = form.foto_url.trim();
+    if (fotoNueva !== (perfil.foto_url ?? "")) {
+      cambios.foto_url = fotoNueva || null;
+    }
+
+    const { error } = await supabase.from("usuarios").update(cambios).eq("id", perfil.id);
     setGuardando(false);
     if (error) {
       toast.error(error.message);
@@ -96,8 +110,9 @@ export function PerfilDialog({
                 variant="outline"
                 className="h-10"
                 onClick={() => archivoRef.current?.click()}
+                disabled={procesandoFoto}
               >
-                Subir imagen
+                {procesandoFoto ? "Procesando…" : "Subir imagen"}
               </Button>
               <input
                 ref={archivoRef}
@@ -106,7 +121,8 @@ export function PerfilDialog({
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
-                  if (file) subirImagen(file);
+                  if (file) void subirImagen(file);
+                  e.target.value = "";
                 }}
               />
               {form.foto_url && (
@@ -160,7 +176,12 @@ export function PerfilDialog({
           <Button variant="outline" className="h-11" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button variant="flame" className="h-11" onClick={guardar} disabled={guardando}>
+          <Button
+            variant="flame"
+            className="h-11"
+            onClick={guardar}
+            disabled={guardando || procesandoFoto}
+          >
             {guardando ? "Guardando…" : "Guardar cambios"}
           </Button>
         </DialogFooter>
